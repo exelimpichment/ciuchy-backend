@@ -1,6 +1,9 @@
+//! this can be implemented using classes with static methods
+//! but I decided to use functional programming here
+//! since I find this method more widely used across the internet
 import { Request, Response } from 'express';
 // import User from '../Models/User';
-// import { StatusCodes } from 'http-status-codes';
+// import * as CustomError from '../errors';
 
 export const register = async (req: Request, res: Response) => {
   res.send('register');
