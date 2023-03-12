@@ -5,8 +5,8 @@ dotenv.config();
 import express from 'express';
 const app = express();
 // database
-import connectDB from './db/connect';
-
+// import connectDB from './db/connect';
+const connectDB = require('./db/connect');
 // access to json
 app.use(express.json());
 // notFound & error handler middleware import
@@ -23,7 +23,7 @@ app.use(morgan('tiny'));
 import { router as authRoutes } from './routes/authRoutes';
 
 app.get('/', (req, res) => {
-  res.json({ msg: 'test' });
+  // res.json({ msg: 'test' });
 });
 
 app.use('/api/v1/auth', authRoutes);

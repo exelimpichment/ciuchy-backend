@@ -1,10 +1,9 @@
-// const mongoose = require('mongoose');
-import * as mongoose from 'mongoose';
-// found on stackoverflow to remove deprecation warning
+const mongoose = require('mongoose');
+
 mongoose.set('strictQuery', false);
 
 const connectDB = (url: string) => {
-  mongoose.connect(url);
+  return mongoose.connect(url);
 };
 
-export default connectDB;
+module.exports = connectDB;
