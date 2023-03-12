@@ -5,7 +5,10 @@ import { Request, Response } from 'express';
 import User from '../Models/User';
 import { StatusCodes } from 'http-status-codes';
 import BadRequestError from '../errors/bad-request';
-// import * as CustomError from '../errors';
+import {
+  createJWT,
+  // isTokenValid
+} from '../utils/jwt';
 
 export const register = async (req: Request, res: Response) => {
   const { email, name, password } = req.body;
@@ -17,7 +20,18 @@ export const register = async (req: Request, res: Response) => {
   }
 
   const user = await User.create({ email, name, password });
-  res.status(StatusCodes.CREATED).json({ user });
+
+  const tokenUser = { name: user.name, userId: user._id, role: user.role };
+  const token = createJWT(tokenUser);
+
+  const oneDay = 1000 * 60 * 60 * 24;
+
+  res.cookie('token', token, {
+    httpOnly: true,
+    expires: new Date(Date.now() + oneDay),
+  });
+
+  res.status(StatusCodes.CREATED).json({ user: tokenUser });
 };
 
 export const login = async (req: Request, res: Response) => {
