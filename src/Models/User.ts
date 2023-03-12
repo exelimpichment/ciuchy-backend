@@ -1,6 +1,6 @@
 import * as mongoose from 'mongoose';
-// import validator from 'validator';
 import isEmail from 'validator/lib/isEmail';
+import bcrypt from 'bcrypt';
 
 const UserSchema = new mongoose.Schema({
   name: {
@@ -29,5 +29,25 @@ const UserSchema = new mongoose.Schema({
     default: 'user',
   },
 });
+
+UserSchema.pre('save', async function () {
+  const salt = await bcrypt.genSalt(10);
+  this.password = await bcrypt.hash(this.password, salt);
+  // ^ this refers to Schema
+});
+
+UserSchema.methods.comparePassword = async function (
+  candidatePassword: string
+) {
+  const isMatch = await bcrypt.compare(candidatePassword, this.password);
+  return isMatch;
+};
+
+// UserSchema.methods.comparePassword = function (candidatePassword, cb) {
+//   bcrypt.compare(candidatePassword, this.password, function (err, isMatch) {
+//     if (err) return cb(err);
+//     cb(null, isMatch);
+//   });
+// };
 
 export default mongoose.model('User', UserSchema);

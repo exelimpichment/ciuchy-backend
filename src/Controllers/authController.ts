@@ -10,6 +10,7 @@ import BadRequestError from '../errors/bad-request';
 export const register = async (req: Request, res: Response) => {
   const { email, name, password } = req.body;
   // destructured to be sure what i am passing to _create_
+
   const isUniqueEmail = await User.findOne({ email });
   if (isUniqueEmail) {
     throw new BadRequestError('email already exists');
