@@ -33,12 +33,12 @@ const UserSchema = new mongoose.Schema({
 UserSchema.pre('save', async function () {
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
-  // ^ this refers to Schema
+  // ^ _this_ refers to Schema
 });
 
 UserSchema.methods.comparePassword = async function (
   candidatePassword: string
-) {
+): Promise<boolean> {
   const isMatch = await bcrypt.compare(candidatePassword, this.password);
   return isMatch;
 };
@@ -50,4 +50,13 @@ UserSchema.methods.comparePassword = async function (
 //   });
 // };
 
-export default mongoose.model('User', UserSchema);
+export interface user extends mongoose.Document {
+  name: string;
+  email: string;
+  password: string;
+  role: 'user' | 'admin';
+  comparePassword(candidatePassword: string): Promise<boolean>;
+}
+
+// export default mongoose.model('User', UserSchema);
+export const User = mongoose.model<user>('User', UserSchema);

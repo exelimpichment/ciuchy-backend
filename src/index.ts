@@ -21,9 +21,17 @@ import morgan from 'morgan';
 app.use(morgan('tiny'));
 // routers
 import { router as authRoutes } from './routes/authRoutes';
+// parse cookies to read cookies that comes with each request
+import cookieParser from 'cookie-parser';
+app.use(cookieParser(process.env.JWT_SECRET));
 
 app.get('/', (req, res) => {
-  // res.json({ msg: 'test' });
+  res.json({ msg: 'test' });
+});
+
+app.get('/api/v1', (req, res) => {
+  console.log(req.signedCookies);
+  res.json({ msg: 'cookies' });
 });
 
 app.use('/api/v1/auth', authRoutes);

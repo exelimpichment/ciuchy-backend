@@ -2,12 +2,13 @@
 //! but I decided to use functional programming here
 //! since I find this method more widely used across the internet
 import { Request, Response } from 'express';
-import User from '../Models/User';
+import { User } from '../Models/User';
 import { StatusCodes } from 'http-status-codes';
 import BadRequestError from '../errors/bad-request';
+import UnauthenticatedError from '../errors/unauthenticated';
 import {
-  createJWT,
   // isTokenValid
+  attachCookiesToResponse,
 } from '../utils/jwt';
 
 export const register = async (req: Request, res: Response) => {
@@ -20,24 +21,39 @@ export const register = async (req: Request, res: Response) => {
   }
 
   const user = await User.create({ email, name, password });
-
   const tokenUser = { name: user.name, userId: user._id, role: user.role };
-  const token = createJWT(tokenUser);
-
-  const oneDay = 1000 * 60 * 60 * 24;
-
-  res.cookie('token', token, {
-    httpOnly: true,
-    expires: new Date(Date.now() + oneDay),
-  });
+  attachCookiesToResponse({ res, user: tokenUser });
 
   res.status(StatusCodes.CREATED).json({ user: tokenUser });
 };
 
 export const login = async (req: Request, res: Response) => {
-  res.send('login');
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    throw new BadRequestError('please provide email and password');
+  }
+
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new UnauthenticatedError('Invalid Credentials');
+  }
+
+  const isPasswordCorrect = await user.comparePassword(password);
+  if (!isPasswordCorrect) {
+    throw new UnauthenticatedError('Invalid Credentials');
+  }
+
+  const tokenUser = { name: user.name, userId: user._id, role: user.role };
+  attachCookiesToResponse({ res, user: tokenUser });
+
+  res.status(StatusCodes.CREATED).json({ user: tokenUser });
 };
 
 export const logout = async (req: Request, res: Response) => {
-  res.send('logout');
+  res.cookie('token', 'logout', {
+    httpOnly: true,
+    expires: new Date(Date.now() + 5 * 1000),
+  });
+  res.status(StatusCodes.OK).json({ msg: 'logout' });
 };
