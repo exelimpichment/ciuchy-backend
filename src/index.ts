@@ -21,6 +21,8 @@ import morgan from 'morgan';
 app.use(morgan('tiny'));
 // routers
 import { router as authRoutes } from './routes/authRoutes';
+import { router as userRoutes } from './routes/userRoutes';
+import { router as itemRoutes } from './routes/itemRoutes';
 // parse cookies to read cookies that comes with each request
 import cookieParser from 'cookie-parser';
 app.use(cookieParser(process.env.JWT_SECRET));
@@ -35,6 +37,8 @@ app.get('/api/v1', (req, res) => {
 });
 
 app.use('/api/v1/auth', authRoutes);
+app.use('/api/v1/user', userRoutes);
+app.use('/api/v1/item', itemRoutes);
 
 // not found & error handler that I placed as two last middleware
 app.use(notFoundMiddleware);

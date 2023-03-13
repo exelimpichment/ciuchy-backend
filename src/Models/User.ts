@@ -43,13 +43,6 @@ UserSchema.methods.comparePassword = async function (
   return isMatch;
 };
 
-// UserSchema.methods.comparePassword = function (candidatePassword, cb) {
-//   bcrypt.compare(candidatePassword, this.password, function (err, isMatch) {
-//     if (err) return cb(err);
-//     cb(null, isMatch);
-//   });
-// };
-
 export interface user extends mongoose.Document {
   name: string;
   email: string;
@@ -58,5 +51,4 @@ export interface user extends mongoose.Document {
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
-// export default mongoose.model('User', UserSchema);
 export const User = mongoose.model<user>('User', UserSchema);
