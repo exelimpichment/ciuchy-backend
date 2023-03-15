@@ -10,7 +10,24 @@ export {};
 // We are required to do that to be able
 //  to augment the global scope.
 
+interface IUser {
+  name: string;
+  role: string;
+  userId: string;
+}
+
+// this interface was use together with  _namespace NodeJS_
+// do not forgert to add --save to dev dependency
+// otherwise does not work for me
+// source: stuckOverflow
+
 declare global {
+  namespace Express {
+    interface Request {
+      user?: IUser;
+    }
+  }
+
   namespace NodeJS {
     interface ProcessEnv {
       MONGO_URL: string;

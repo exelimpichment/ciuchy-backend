@@ -2,6 +2,7 @@ import * as CustomErr from '../errors';
 // import { isTokenValid } from '../utils/jwt';
 import { Request, Response } from 'express';
 import { isTokenValid } from '../utils/jwt';
+// import { IVerifyResponse } from '../utils/jwt';
 
 type NextFunction = {
   (err?: any): void;
@@ -21,9 +22,8 @@ const authenticateUser = async (
   try {
     const payload = isTokenValid({ token });
     const { name, role, userId } = payload;
-    console.log(name, role, userId);
 
-    //     req.user = { name, role, userId };
+    req.user = { name, role, userId };
 
     next();
   } catch (error) {
