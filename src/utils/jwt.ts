@@ -7,6 +7,11 @@ export interface ITokenUser {
   userId: Types.ObjectId;
   role: 'admin' | 'user';
 }
+export interface IVerifyResponse {
+  name: string;
+  userId: string;
+  role: string;
+}
 
 export const createJWT = ({ payload }: { payload: ITokenUser }) => {
   const token = jwt.sign(payload, process.env.JWT_SECRET as string, {
@@ -43,5 +48,5 @@ export const attachCookiesToResponse = ({
 // https://stackoverflow.com/questions/66328425/jwt-argument-of-type-string-undefined-is-not-assignable-to-parameter-of-typ
 
 export const isTokenValid = ({ token }: { token: string }) => {
-  jwt.verify(token, process.env.JWT_SECRET as string);
+  return jwt.verify(token, process.env.JWT_SECRET as string) as IVerifyResponse;
 };

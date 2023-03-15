@@ -1,6 +1,6 @@
 import express from 'express';
-
 export const router = express.Router();
+import authenticateUser from '../middleware/authentication';
 
 import {
   getSingleUser,
@@ -15,6 +15,6 @@ router.route('/updateUser').patch(updateUser);
 router.route('/updateUsersPassword').patch(updateUsersPassword);
 
 router.route('/getUserSearchList').get(getUserSearchList);
-router.route('/:Id').get(getSingleUser);
+router.route('/:id').get(authenticateUser, getSingleUser);
 // Request URL: http://localhost:3000/users/34/books/8989
 // req.params: { "userId": "34", "bookId": "8989" }
