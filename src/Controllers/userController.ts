@@ -3,6 +3,8 @@ import { Request, Response } from 'express';
 import { StatusCodes } from 'http-status-codes';
 import { User } from '../Models/User';
 import * as CustomError from '../errors';
+import createTokenUser from '../utils/createTokenUser';
+import { attachCookiesToResponse } from '../utils/jwt';
 
 export const getUserSearchList = async (req: Request, res: Response) => {
   const { user } = req.query;
@@ -54,5 +56,19 @@ export const updateUserPassword = async (req: Request, res: Response) => {
 };
 
 export const updateUser = async (req: Request, res: Response) => {
-  res.send('updateUser');
+  const { email, name } = req.body;
+  if (!email || !name) {
+    throw new CustomError.BadRequestError('Please, provide all values');
+  }
+  const user = await User.findOneAndUpdate(
+    { _id: req.user?.userId },
+    { email, name },
+    { new: true, runValidators: true }
+  );
+
+  if (user !== null) {
+    let tokenUser = createTokenUser(user);
+    attachCookiesToResponse({ res, user: tokenUser });
+    res.status(StatusCodes.OK).json({ user: tokenUser });
+  }
 };

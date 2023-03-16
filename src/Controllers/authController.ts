@@ -50,7 +50,7 @@ export const login = async (req: Request, res: Response) => {
   const tokenUser = createTokenUser(user);
   attachCookiesToResponse({ res, user: tokenUser });
 
-  res.status(StatusCodes.CREATED).json({ user: tokenUser });
+  res.status(StatusCodes.OK).json({ user: tokenUser });
 };
 
 export const logout = async (req: Request, res: Response) => {
