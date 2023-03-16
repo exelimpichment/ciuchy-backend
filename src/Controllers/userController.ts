@@ -25,13 +25,34 @@ export const getSingleUser = async (req: Request, res: Response) => {
 };
 
 export const showCurrentUser = async (req: Request, res: Response) => {
-  res.send('showMe');
+  res.status(StatusCodes.OK).json({ user: req.user });
+};
+
+export const updateUserPassword = async (req: Request, res: Response) => {
+  const {
+    oldPassword,
+    newPassword,
+  }: { oldPassword: string; newPassword: string } = req.body;
+
+  if (!oldPassword || !newPassword) {
+    throw new CustomError.BadRequestError(
+      'please provide old and new password'
+    );
+  }
+  const user = await User.findOne({ _id: req.user?.userId });
+
+  const isPasswordCorrect = await user?.comparePassword(oldPassword);
+
+  if (!isPasswordCorrect) {
+    throw new CustomError.UnauthenticatedError('Invalid credentials');
+  }
+  if (user !== null) {
+    user.password = newPassword;
+    await user.save();
+  }
+  res.status(StatusCodes.OK).json({ msg: 'Success! Password updated' });
 };
 
 export const updateUser = async (req: Request, res: Response) => {
   res.send('updateUser');
-};
-
-export const updateUsersPassword = async (req: Request, res: Response) => {
-  res.send('updateUsersPassword');
 };

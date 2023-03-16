@@ -6,6 +6,8 @@ import { User } from '../Models/User';
 import { StatusCodes } from 'http-status-codes';
 import BadRequestError from '../errors/bad-request';
 import UnauthenticatedError from '../errors/unauthenticated';
+import * as CustomError from '../errors';
+import createTokenUser from '../utils/createTokenUser';
 import {
   // isTokenValid
   attachCookiesToResponse,
@@ -17,11 +19,12 @@ export const register = async (req: Request, res: Response) => {
 
   const isUniqueEmail = await User.findOne({ email });
   if (isUniqueEmail) {
-    throw new BadRequestError('email already exists');
+    throw new CustomError.BadRequestError('email already exists');
   }
 
   const user = await User.create({ email, name, password });
-  const tokenUser = { name: user.name, userId: user._id, role: user.role };
+
+  const tokenUser = createTokenUser(user);
   attachCookiesToResponse({ res, user: tokenUser });
 
   res.status(StatusCodes.CREATED).json({ user: tokenUser });
@@ -44,7 +47,7 @@ export const login = async (req: Request, res: Response) => {
     throw new UnauthenticatedError('Invalid Credentials');
   }
 
-  const tokenUser = { name: user.name, userId: user._id, role: user.role };
+  const tokenUser = createTokenUser(user);
   attachCookiesToResponse({ res, user: tokenUser });
 
   res.status(StatusCodes.CREATED).json({ user: tokenUser });

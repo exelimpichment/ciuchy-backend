@@ -33,22 +33,23 @@ const UserSchema = new mongoose.Schema({
 UserSchema.pre('save', async function () {
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
-  // ^ _this_ refers to Schema
+  // ^ the word _this_ refers to Schema
 });
 
 UserSchema.methods.comparePassword = async function (
   candidatePassword: string
 ): Promise<boolean> {
   const isMatch = await bcrypt.compare(candidatePassword, this.password);
+
   return isMatch;
 };
 
-export interface user extends mongoose.Document {
+export interface IUser extends mongoose.Document {
   name: string;
   email: string;
-  password: string;
+  password?: string;
   role: 'user' | 'admin';
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 
-export const User = mongoose.model<user>('User', UserSchema);
+export const User = mongoose.model<IUser>('User', UserSchema);
