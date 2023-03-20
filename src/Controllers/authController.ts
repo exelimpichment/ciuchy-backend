@@ -4,15 +4,10 @@
 import { Request, Response } from 'express';
 import { User } from '../Models/User';
 import { StatusCodes } from 'http-status-codes';
-import BadRequestError from '../errors/bad-request';
-import UnauthenticatedError from '../errors/unauthenticated';
 import * as CustomError from '../errors';
 import createTokenUser from '../utils/createTokenUser';
-import {
-  // isTokenValid
-  attachCookiesToResponse,
-} from '../utils/jwt';
-// import { verify } from 'crypto';
+import { attachCookiesToResponse } from '../utils/jwt';
+import crypto from 'crypto';
 
 export const register = async (req: Request, res: Response) => {
   const { email, name, password } = req.body;
@@ -23,30 +18,56 @@ export const register = async (req: Request, res: Response) => {
     throw new CustomError.BadRequestError('email already exists');
   }
 
-  const verificationToken = 'fake token';
+  const verificationToken = crypto.randomBytes(40).toString('hex');
+
   const user = await User.create({ email, name, password, verificationToken });
   res.status(StatusCodes.CREATED).json({ msg: 'Success!', user });
 };
 
 export const verifyEmail = async (req: Request, res: Response) => {
-  // const {verificationToken, }
+  const {
+    verificationToken,
+    email,
+  }: { verificationToken: string; email: string } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (!user) {
+    throw new CustomError.UnauthenticatedError('Verification Failed1');
+  }
+
+  if (user.verificationToken !== verificationToken) {
+    throw new CustomError.UnauthenticatedError('Verification Failed2');
+  }
+
+  user.isVerified = true;
+  user.verifiedOn = Date.now();
+  user.verificationToken = '';
+
+  await user.save();
+
+  res.status(StatusCodes.OK).json({ msg: 'Email Verified!' });
 };
 
 export const login = async (req: Request, res: Response) => {
   const { email, password } = req.body;
 
   if (!email || !password) {
-    throw new BadRequestError('please provide email and password');
+    throw new CustomError.BadRequestError('please provide email and password');
   }
 
   const user = await User.findOne({ email });
   if (!user) {
-    throw new UnauthenticatedError('Invalid Credentials');
+    throw new CustomError.UnauthenticatedError('Invalid Credentials');
   }
 
   const isPasswordCorrect = await user.comparePassword(password);
   if (!isPasswordCorrect) {
-    throw new UnauthenticatedError('Invalid Credentials');
+    throw new CustomError.UnauthenticatedError('Invalid Credentials');
+  }
+
+  if (!user.isVerified) {
+    throw new CustomError.UnauthenticatedError('Please, verify your email');
   }
 
   const tokenUser = createTokenUser(user);

@@ -37,6 +37,8 @@ const UserSchema = new mongoose.Schema({
 });
 
 UserSchema.pre('save', async function () {
+  if (!this.isModified('password')) return;
+
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
   // ^ the word _this_ refers to Schema
@@ -46,7 +48,6 @@ UserSchema.methods.comparePassword = async function (
   candidatePassword: string
 ): Promise<boolean> {
   const isMatch = await bcrypt.compare(candidatePassword, this.password);
-  console.log({ isMatch });
 
   return isMatch;
 };
