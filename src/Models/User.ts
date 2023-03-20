@@ -28,6 +28,12 @@ const UserSchema = new mongoose.Schema({
     enum: ['admin', 'user'],
     default: 'user',
   },
+  verificationToken: String,
+  isVerified: {
+    type: Boolean,
+    default: false,
+  },
+  verifiedOn: Date,
 });
 
 UserSchema.pre('save', async function () {
@@ -40,6 +46,7 @@ UserSchema.methods.comparePassword = async function (
   candidatePassword: string
 ): Promise<boolean> {
   const isMatch = await bcrypt.compare(candidatePassword, this.password);
+  console.log({ isMatch });
 
   return isMatch;
 };
@@ -49,6 +56,9 @@ export interface IUser extends mongoose.Document {
   email: string;
   password?: string;
   role: 'user' | 'admin';
+  verificationToken: string;
+  isVerified: boolean;
+  verifiedOn: number;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 

@@ -12,6 +12,7 @@ import {
   // isTokenValid
   attachCookiesToResponse,
 } from '../utils/jwt';
+// import { verify } from 'crypto';
 
 export const register = async (req: Request, res: Response) => {
   const { email, name, password } = req.body;
@@ -22,12 +23,13 @@ export const register = async (req: Request, res: Response) => {
     throw new CustomError.BadRequestError('email already exists');
   }
 
-  const user = await User.create({ email, name, password });
+  const verificationToken = 'fake token';
+  const user = await User.create({ email, name, password, verificationToken });
+  res.status(StatusCodes.CREATED).json({ msg: 'Success!', user });
+};
 
-  const tokenUser = createTokenUser(user);
-  attachCookiesToResponse({ res, user: tokenUser });
-
-  res.status(StatusCodes.CREATED).json({ user: tokenUser });
+export const verifyEmail = async (req: Request, res: Response) => {
+  // const {verificationToken, }
 };
 
 export const login = async (req: Request, res: Response) => {
