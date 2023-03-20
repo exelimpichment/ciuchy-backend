@@ -5,6 +5,7 @@ import { User } from '../Models/User';
 import * as CustomError from '../errors';
 import createTokenUser from '../utils/createTokenUser';
 import { attachCookiesToResponse } from '../utils/jwt';
+import { checkPermissions } from '../utils/checkPermission';
 
 export const getUserSearchList = async (req: Request, res: Response) => {
   const { user } = req.query;
@@ -21,6 +22,9 @@ export const getSingleUser = async (req: Request, res: Response) => {
 
   if (!user) {
     throw new CustomError.NotFoundError(`No user with id: ${_id} `);
+  }
+  if (req.user !== undefined) {
+    checkPermissions(req.user, user._id);
   }
 
   res.status(StatusCodes.OK).json({ user });
