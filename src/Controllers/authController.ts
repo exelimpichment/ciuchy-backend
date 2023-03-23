@@ -33,11 +33,11 @@ export const verifyEmail = async (req: Request, res: Response) => {
   const user = await User.findOne({ email });
 
   if (!user) {
-    throw new CustomError.UnauthenticatedError('Verification Failed1');
+    throw new CustomError.UnauthenticatedError('Verification Failed');
   }
 
   if (user.verificationToken !== verificationToken) {
-    throw new CustomError.UnauthenticatedError('Verification Failed2');
+    throw new CustomError.UnauthenticatedError('Verification Failed');
   }
 
   user.isVerified = true;
