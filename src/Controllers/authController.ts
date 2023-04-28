@@ -8,7 +8,7 @@ import * as CustomError from '../errors';
 import createTokenUser from '../utils/createTokenUser';
 import { attachCookiesToResponse } from '../utils/jwt';
 import crypto from 'crypto';
-import sendEmail from '../utils/sendEmail';
+import sendVerificationEmail from '../utils/sendVerificationEmail';
 
 export const register = async (req: Request, res: Response) => {
   const { email, name, password } = req.body;
@@ -20,8 +20,15 @@ export const register = async (req: Request, res: Response) => {
 
   const verificationToken = crypto.randomBytes(40).toString('hex');
 
-  await User.create({ email, name, password, verificationToken });
-  await sendEmail();
+  const origin = 'http://localhost:3000';
+
+  const user = await User.create({ email, name, password, verificationToken });
+  await sendVerificationEmail({
+    name: user.name,
+    email: user.email,
+    verificationToken,
+    origin,
+  });
   res.status(StatusCodes.CREATED).json({ msg: 'Check Your Mailbox' });
 };
 
