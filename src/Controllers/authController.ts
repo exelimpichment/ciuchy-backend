@@ -1,6 +1,6 @@
 //! this can be implemented using classes with static methods
 //! but I decided to use functional programming here
-//! since I find this method more widely used across the internet
+//! since I find this method more widely used
 import { Request, Response } from 'express';
 import { User } from '../Models/User';
 import { StatusCodes } from 'http-status-codes';
@@ -8,20 +8,21 @@ import * as CustomError from '../errors';
 import createTokenUser from '../utils/createTokenUser';
 import { attachCookiesToResponse } from '../utils/jwt';
 import crypto from 'crypto';
+import sendEmail from '../utils/sendEmail';
 
 export const register = async (req: Request, res: Response) => {
   const { email, name, password } = req.body;
-  // destructured to be sure what i am passing to _create_
 
   const isUniqueEmail = await User.findOne({ email });
   if (isUniqueEmail) {
-    throw new CustomError.BadRequestError('email already exists');
+    throw new CustomError.BadRequestError('Email already exists');
   }
 
   const verificationToken = crypto.randomBytes(40).toString('hex');
 
-  const user = await User.create({ email, name, password, verificationToken });
-  res.status(StatusCodes.CREATED).json({ msg: 'Success!', user });
+  await User.create({ email, name, password, verificationToken });
+  await sendEmail();
+  res.status(StatusCodes.CREATED).json({ msg: 'Check Your Mailbox' });
 };
 
 export const verifyEmail = async (req: Request, res: Response) => {
@@ -73,7 +74,7 @@ export const login = async (req: Request, res: Response) => {
   const tokenUser = createTokenUser(user);
   attachCookiesToResponse({ res, user: tokenUser });
 
-  res.status(StatusCodes.OK).json({ user: tokenUser });
+  res.status(StatusCodes.OK).json({ msg: 'Logged in' });
 };
 
 export const logout = async (req: Request, res: Response) => {
@@ -81,5 +82,5 @@ export const logout = async (req: Request, res: Response) => {
     httpOnly: true,
     expires: new Date(Date.now() + 5 * 1000),
   });
-  res.status(StatusCodes.OK).json({ msg: 'logout' });
+  res.status(StatusCodes.OK).json({ msg: 'Logged Out' });
 };

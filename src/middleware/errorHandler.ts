@@ -16,6 +16,13 @@ type ErrorRequestHandler = (
   next: NextFunction
 ) => any;
 
+interface IErrorMessageItem {
+  [key: string]: string | object | undefined | boolean;
+  properties: {
+    message: string;
+  };
+}
+// <IErrorMessageItem>
 export const errorHandlerMiddleware: ErrorRequestHandler = (
   err,
   req,
@@ -27,17 +34,12 @@ export const errorHandlerMiddleware: ErrorRequestHandler = (
     statusCode: err.statusCode || StatusCodes.INTERNAL_SERVER_ERROR,
     msg: err.message || 'Something went wrong try again later',
   };
-  //  we have to check if some error is instance of CustomAPIError
-  // if (err instanceof CustomAPIError) {
-  //   return res.status(err.statusCode).json({ msg: err.message });
-  // }
-  //^  we can comment this out since we have customError
-  //^  where we check for code and msg
 
   if (err.name === 'ValidationError') {
-    customError.msg = Object.values(err.errors)
-      .map((item: any) => item.message)
-      //!remove any and set a proper type
+    console.log(err.errors);
+
+    customError.msg = Object.values<IErrorMessageItem>(err.errors)
+      .map((item) => item.message)
       .join(',');
     customError.statusCode = 400;
   }
@@ -53,6 +55,5 @@ export const errorHandlerMiddleware: ErrorRequestHandler = (
     customError.msg = `No item found with id: ${err.value}`;
     customError.statusCode = 404;
   }
-  // return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json({ err }); // < == comment this in later to see real error msgs
   return res.status(customError.statusCode).json({ msg: customError.msg });
 };

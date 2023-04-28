@@ -12,7 +12,6 @@ const UserSchema = new mongoose.Schema({
   email: {
     type: String,
     required: [true, 'Please, provide email'],
-    // we could use regEx + match property but i used validator library
     validate: {
       validator: isEmail,
       message: 'Please, provide valid email',
@@ -41,7 +40,6 @@ UserSchema.pre('save', async function () {
 
   const salt = await bcrypt.genSalt(10);
   this.password = await bcrypt.hash(this.password, salt);
-  // ^ the word _this_ refers to Schema
 });
 
 UserSchema.methods.comparePassword = async function (

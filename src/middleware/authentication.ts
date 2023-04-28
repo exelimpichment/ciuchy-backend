@@ -1,8 +1,6 @@
 import * as CustomErr from '../errors';
-// import { isTokenValid } from '../utils/jwt';
 import { Request, Response } from 'express';
 import { isTokenValid } from '../utils/jwt';
-// import { IVerifyResponse } from '../utils/jwt';
 
 type NextFunction = {
   (err?: any): void;
