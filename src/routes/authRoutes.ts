@@ -1,4 +1,5 @@
 import express from 'express';
+import authenticateUser from '../middleware/authentication';
 
 export const router = express.Router();
 
@@ -11,5 +12,5 @@ import {
 
 router.post('/register', register);
 router.post('/login', login);
-router.get('/logout', logout);
+router.delete('/logout', authenticateUser, logout);
 router.post('/verify-email', verifyEmail);

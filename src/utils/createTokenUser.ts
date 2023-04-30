@@ -1,9 +1,9 @@
+import { Types } from 'mongoose';
 import { IUser } from '../Models/User';
-import Types from 'mongoose';
 
-const createTokenUser = <UserWithId extends IUser & { _id: Types.ObjectId }>(
-  user: UserWithId
-) => {
+const createTokenUser = (
+  user: IUser
+): { name: string; userId: Types.ObjectId; role: 'user' | 'admin' } => {
   return { name: user.name, userId: user._id, role: user.role };
 };
 

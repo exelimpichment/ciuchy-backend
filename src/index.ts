@@ -13,14 +13,13 @@ import { router as authRoutes } from './routes/authRoutes';
 import { router as userRoutes } from './routes/userRoutes';
 import { router as itemRoutes } from './routes/itemRoutes';
 
-const app = express();
-app.use(express.json());
+const cors = require('cors');
 
+const app = express();
+dotenv.config();
+app.use(express.json());
 app.use(cookieParser(process.env.JWT_SECRET));
 app.use(morgan('tiny'));
-
-dotenv.config();
-const cors = require('cors');
 
 app.use(
   cors({

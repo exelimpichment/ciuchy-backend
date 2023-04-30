@@ -8,8 +8,8 @@ interface ISendEmailProps {
 }
 
 const sendEmail = async ({ to, subject, html }: ISendEmailProps) => {
-  let testAccount = await nodemailer.createTestAccount();
-  console.log(testAccount, 'log');
+  // let testAccount =
+  await nodemailer.createTestAccount();
 
   const transporter = nodemailer.createTransport(nodeMailerConfig);
 

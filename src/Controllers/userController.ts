@@ -70,9 +70,11 @@ export const updateUser = async (req: Request, res: Response) => {
     { new: true, runValidators: true }
   );
 
+  const refreshToken = 'test';
+
   if (user !== null) {
-    let tokenUser = createTokenUser(user);
-    attachCookiesToResponse({ res, user: tokenUser });
-    res.status(StatusCodes.OK).json({ user: tokenUser });
+    let userForTokenization = createTokenUser(user);
+    attachCookiesToResponse({ res, refreshToken, userForTokenization });
+    res.status(StatusCodes.OK).json({ user: userForTokenization });
   }
 };

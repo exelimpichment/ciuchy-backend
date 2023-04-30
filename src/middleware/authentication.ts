@@ -1,6 +1,8 @@
 import * as CustomErr from '../errors';
 import { Request, Response } from 'express';
 import { isTokenValid } from '../utils/jwt';
+import { Token } from '../Models/Token';
+import { attachCookiesToResponse } from '../utils/jwt';
 
 type NextFunction = {
   (err?: any): void;
@@ -11,18 +13,42 @@ const authenticateUser = async (
   res: Response,
   next: NextFunction
 ) => {
-  const token: string = req.signedCookies.token;
-
-  if (!token) {
-    throw new CustomErr.UnauthenticatedError('Authentication failed');
-  }
+  const {
+    accessToken,
+    refreshToken,
+  }: { accessToken: string; refreshToken: string } = req.signedCookies;
 
   try {
-    const payload = isTokenValid({ token });
-    const { name, role, userId } = payload;
+    if (accessToken) {
+      const { name, userId, role } = isTokenValid(accessToken);
 
-    req.user = { name, role, userId };
+      req.user = {
+        name,
+        userId,
+        role,
+      };
+      return next();
+    }
+    console.log('dsfnskjdfsfbsbf');
 
+    const refreshTokenPayload = isTokenValid(refreshToken);
+
+    const existingToken = await Token.findOne({
+      user: refreshTokenPayload.userForTokenization.userId,
+      refreshToken: refreshTokenPayload.refreshToken,
+    });
+
+    if (!existingToken || !existingToken?.isValid) {
+      throw new CustomErr.UnauthenticatedError('Authentication failed');
+    }
+
+    attachCookiesToResponse({
+      res,
+      userForTokenization: refreshTokenPayload.userForTokenization,
+      refreshToken: existingToken.refreshToken,
+    });
+
+    req.user = refreshTokenPayload.userForTokenization;
     next();
   } catch (error) {
     throw new CustomErr.UnauthenticatedError('Authentication failed');

@@ -13,7 +13,7 @@ export {};
 interface IUser {
   name: string;
   role: string;
-  userId: string;
+  userId: Types.ObjectId;
 }
 
 // this interface was use together with  _namespace NodeJS_

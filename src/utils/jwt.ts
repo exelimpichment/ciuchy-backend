@@ -11,34 +11,58 @@ export interface IVerifyResponse {
   name: string;
   userId: string;
   role: string;
+  refreshToken?: string;
 }
 
-export const createJWT = ({ payload }: { payload: ITokenUser }) => {
-  const token = jwt.sign(payload, process.env.JWT_SECRET as string, {
-    expiresIn: process.env.JWT_LIFETIME,
-  });
+interface IRefreshTokenPayload {
+  userForTokenization: ITokenUser;
+  refreshToken: string;
+}
+
+export const createJWT = ({
+  payload,
+}: {
+  payload: ITokenUser | IRefreshTokenPayload;
+}) => {
+  console.log(payload, '<===payload');
+
+  const token = jwt.sign(payload, process.env.JWT_SECRET as string);
   return token;
 };
 
 export const attachCookiesToResponse = ({
   res,
-  user,
+  userForTokenization,
+  refreshToken,
 }: {
   res: Response;
-  user: ITokenUser;
+  refreshToken: string;
+  userForTokenization: ITokenUser;
 }) => {
-  const token = createJWT({ payload: user });
+  const accessTokenJWT = createJWT({ payload: userForTokenization });
+  const refreshTokenJWT = createJWT({
+    payload: { userForTokenization, refreshToken },
+  });
 
   const oneDay = 1000 * 60 * 60 * 24;
+  const oneMonth = 1000 * 60 * 60 * 24 * 30;
 
-  res.cookie('token', token, {
+  res.cookie('accessToken', accessTokenJWT, {
     httpOnly: true,
-    expires: new Date(Date.now() + oneDay),
     secure: process.env.NODE_ENV === 'production',
     signed: true,
+    expires: new Date(Date.now() + oneDay),
+  });
+
+  res.cookie('refreshToken', refreshTokenJWT, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    signed: true,
+    expires: new Date(Date.now() + oneMonth),
   });
 };
 
-export const isTokenValid = ({ token }: { token: string }) => {
-  return jwt.verify(token, process.env.JWT_SECRET as string) as IVerifyResponse;
+export const isTokenValid = (token: string) => {
+  return jwt.verify(token, process.env.JWT_SECRET as string) as ITokenUser &
+    IRefreshTokenPayload;
 };

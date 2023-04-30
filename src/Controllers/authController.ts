@@ -3,12 +3,13 @@
 //! since I find this method more widely used
 import { Request, Response } from 'express';
 import { User } from '../Models/User';
+import { Token } from '../Models/Token';
 import { StatusCodes } from 'http-status-codes';
 import * as CustomError from '../errors';
 import createTokenUser from '../utils/createTokenUser';
-import { attachCookiesToResponse } from '../utils/jwt';
 import crypto from 'crypto';
 import sendVerificationEmail from '../utils/sendVerificationEmail';
+import { attachCookiesToResponse } from '../utils/jwt';
 
 export const register = async (req: Request, res: Response) => {
   const { email, name, password } = req.body;
@@ -75,19 +76,55 @@ export const login = async (req: Request, res: Response) => {
   }
 
   if (!user.isVerified) {
-    throw new CustomError.UnauthenticatedError('Please, verify your email');
+    throw new CustomError.UnauthenticatedError(
+      'Please, verify your email first'
+    );
   }
 
-  const tokenUser = createTokenUser(user);
-  attachCookiesToResponse({ res, user: tokenUser });
+  const userForTokenization = createTokenUser(user); // <== {name, userId, role}
 
-  res.status(StatusCodes.OK).json({ msg: 'Logged in' });
+  let refreshToken = '';
+
+  const existingToken = await Token.findOne({ user: user._id });
+
+  if (existingToken) {
+    const { isValid } = existingToken;
+    if (!isValid) {
+      throw new CustomError.UnauthenticatedError('Invalid Credentials');
+    }
+    refreshToken = existingToken.refreshToken;
+    attachCookiesToResponse({ res, userForTokenization, refreshToken });
+    res
+      .status(StatusCodes.OK)
+      .json({ user: userForTokenization, msg: 'Logged In' });
+    return;
+  }
+
+  refreshToken = crypto.randomBytes(40).toString('hex');
+
+  const userAgent = req.headers['user-agent'];
+  const ip = req.ip;
+  const userToken = { refreshToken, userAgent, ip, user: user._id };
+
+  await Token.create(userToken);
+
+  attachCookiesToResponse({ res, userForTokenization, refreshToken });
+
+  res
+    .status(StatusCodes.OK)
+    .json({ user: userForTokenization, msg: 'Logged In' });
 };
 
 export const logout = async (req: Request, res: Response) => {
-  res.cookie('token', 'logout', {
+  await Token.findOneAndDelete({ user: req.user?.userId });
+
+  res.cookie('accessToken', 'logout', {
     httpOnly: true,
-    expires: new Date(Date.now() + 5 * 1000),
+    expires: new Date(Date.now()),
+  });
+  res.cookie('refreshToken', 'logout', {
+    httpOnly: true,
+    expires: new Date(Date.now()),
   });
   res.status(StatusCodes.OK).json({ msg: 'Logged Out' });
 };
