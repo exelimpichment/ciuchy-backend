@@ -128,3 +128,11 @@ export const logout = async (req: Request, res: Response) => {
   });
   res.status(StatusCodes.OK).json({ msg: 'Logged Out' });
 };
+
+export const forgotPassword = async (req: Request, res: Response) => {
+  res.send('forgot password');
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  res.send('reset password');
+};
