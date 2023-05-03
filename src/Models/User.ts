@@ -64,6 +64,8 @@ export interface IUser extends mongoose.Document {
   verificationToken: string;
   isVerified: boolean;
   verifiedOn: number;
+  passwordTokenExpirationDate: number | null;
+  passwordToken: string | null;
   comparePassword(candidatePassword: string): Promise<boolean>;
 }
 

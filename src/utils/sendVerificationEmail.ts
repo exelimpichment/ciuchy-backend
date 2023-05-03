@@ -13,7 +13,7 @@ const sendVerificationEmail = async ({
   verificationToken,
   origin,
 }: ISendVerificationEmailProps) => {
-  const verifyEmail = `${origin}/user/verify-email?verificationToken=${verificationToken}&email=${email}`;
+  const verifyEmail = `${origin}/user/verify-email/${verificationToken}?email=${email}`;
 
   const message = `<p>Verification link: <a href="${verifyEmail}">Verify Email</ a></p>`;
 

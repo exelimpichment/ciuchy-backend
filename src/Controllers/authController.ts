@@ -1,6 +1,3 @@
-//! this can be implemented using classes with static methods
-//! but I decided to use functional programming here
-//! since I find this method more widely used
 import { Request, Response } from 'express';
 import { User } from '../Models/User';
 import { Token } from '../Models/Token';
@@ -10,6 +7,7 @@ import createTokenUser from '../utils/createTokenUser';
 import crypto from 'crypto';
 import sendVerificationEmail from '../utils/sendVerificationEmail';
 import { attachCookiesToResponse } from '../utils/jwt';
+import sendResetPasswordEmail from '../utils/sendResetPasswordEmail';
 
 export const register = async (req: Request, res: Response) => {
   const { email, name, password } = req.body;
@@ -130,9 +128,61 @@ export const logout = async (req: Request, res: Response) => {
 };
 
 export const forgotPassword = async (req: Request, res: Response) => {
-  res.send('forgot password');
+  const { email } = req.body;
+
+  if (!email) {
+    throw new CustomError.BadRequestError('Please provide email');
+  }
+
+  const user = await User.findOne({ email });
+
+  if (user) {
+    const passwordToken = crypto.randomBytes(70).toString('hex');
+    const origin = 'http://localhost:3000';
+    await sendResetPasswordEmail({
+      name: user.name,
+      email: user.email,
+      verificationToken: passwordToken,
+      origin,
+    });
+    const tenMinutes = 1000 * 60 * 10;
+    const passwordTokenExpirationDate = Date.now() + tenMinutes;
+
+    user.passwordToken = passwordToken;
+    user.passwordTokenExpirationDate = passwordTokenExpirationDate;
+    await user.save();
+  }
+
+  res
+    .status(StatusCodes.OK)
+    .json({ msg: 'Password reset sent. Check your mailbox.' });
 };
 
 export const resetPassword = async (req: Request, res: Response) => {
-  res.send('reset password');
+  const {
+    verificationToken,
+    email,
+    password,
+  }: { verificationToken: string; email: string; password: string } = req.body;
+
+  if (!verificationToken || !email || !password) {
+    throw new CustomError.BadRequestError('Please provide all values');
+  }
+
+  const user = await User.findOne({ email });
+
+  if (user && user.passwordTokenExpirationDate) {
+    const currentDate = Date.now();
+    if (
+      user.passwordToken === verificationToken &&
+      user.passwordTokenExpirationDate > currentDate
+    ) {
+      user.password = password;
+      user.passwordToken = null;
+      user.passwordTokenExpirationDate = null;
+      await user.save();
+    }
+  }
+
+  res.status(StatusCodes.OK).json({ msg: 'Password changed' });
 };
