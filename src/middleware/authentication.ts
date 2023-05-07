@@ -29,7 +29,6 @@ const authenticateUser = async (
       };
       return next();
     }
-    console.log('dsfnskjdfsfbsbf');
 
     const refreshTokenPayload = isTokenValid(refreshToken);
 
@@ -38,7 +37,7 @@ const authenticateUser = async (
       refreshToken: refreshTokenPayload.refreshToken,
     });
 
-    if (!existingToken || !existingToken?.isValid) {
+    if (!existingToken || !existingToken.isValid) {
       throw new CustomErr.UnauthenticatedError('Authentication failed');
     }
 

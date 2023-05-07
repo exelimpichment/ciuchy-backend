@@ -8,6 +8,7 @@ import crypto from 'crypto';
 import sendVerificationEmail from '../utils/sendVerificationEmail';
 import { attachCookiesToResponse } from '../utils/jwt';
 import sendResetPasswordEmail from '../utils/sendResetPasswordEmail';
+import hashString from '../utils/createHash';
 
 export const register = async (req: Request, res: Response) => {
   const { email, name, password } = req.body;
@@ -124,6 +125,7 @@ export const logout = async (req: Request, res: Response) => {
     httpOnly: true,
     expires: new Date(Date.now()),
   });
+
   res.status(StatusCodes.OK).json({ msg: 'Logged Out' });
 };
 
@@ -148,7 +150,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
     const tenMinutes = 1000 * 60 * 10;
     const passwordTokenExpirationDate = Date.now() + tenMinutes;
 
-    user.passwordToken = passwordToken;
+    user.passwordToken = hashString(passwordToken);
     user.passwordTokenExpirationDate = passwordTokenExpirationDate;
     await user.save();
   }
@@ -174,7 +176,7 @@ export const resetPassword = async (req: Request, res: Response) => {
   if (user && user.passwordTokenExpirationDate) {
     const currentDate = Date.now();
     if (
-      user.passwordToken === verificationToken &&
+      user.passwordToken === hashString(verificationToken) &&
       user.passwordTokenExpirationDate > currentDate
     ) {
       user.password = password;

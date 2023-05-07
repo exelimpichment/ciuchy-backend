@@ -8,13 +8,12 @@ interface ISendEmailProps {
 }
 
 const sendEmail = async ({ to, subject, html }: ISendEmailProps) => {
-  // let testAccount =
   await nodemailer.createTestAccount();
 
   const transporter = nodemailer.createTransport(nodeMailerConfig);
 
   return transporter.sendMail({
-    from: '<ciuchy.store@gmail.com>', // sender address
+    from: 'store.ciuchy@gmail.com',
     to,
     subject,
     html,
