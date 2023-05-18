@@ -24,8 +24,6 @@ export const createJWT = ({
 }: {
   payload: ITokenUser | IRefreshTokenPayload;
 }) => {
-  console.log(payload, '<===payload');
-
   const token = jwt.sign(payload, process.env.JWT_SECRET as string);
   return token;
 };

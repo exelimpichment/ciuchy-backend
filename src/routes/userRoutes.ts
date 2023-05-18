@@ -1,19 +1,20 @@
 import express from 'express';
 import authenticateUser from '../middleware/authentication';
-// import authorizeUser from '../middleware/authorization';
 export const router = express.Router();
-
+import upload from '../utils/multer-config';
 import {
   getSingleUser,
   showCurrentUser,
-  updateUser,
+  updateProfileDetails,
   updateUserPassword,
   getUserSearchList,
 } from '../Controllers/userController';
 
-router.route('/showMe').get(authenticateUser, showCurrentUser);
-router.route('/updateUser').patch(authenticateUser, updateUser);
+router
+  .route('/updateProfileDetails')
+  .patch(authenticateUser, upload.single('image'), updateProfileDetails);
 router.route('/updateUserPassword').patch(authenticateUser, updateUserPassword);
-
 router.route('/getUserSearchList').get(getUserSearchList);
-router.route('/:id').get(authenticateUser, getSingleUser);
+
+router.route('/showMe').get(authenticateUser, showCurrentUser);
+router.route('/:id').get(getSingleUser);

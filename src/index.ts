@@ -1,4 +1,5 @@
 import * as dotenv from 'dotenv';
+dotenv.config();
 import express from 'express';
 import connectDB from './db/connect';
 
@@ -16,10 +17,11 @@ import { router as itemRoutes } from './routes/itemRoutes';
 const cors = require('cors');
 
 const app = express();
-dotenv.config();
+
 app.use(express.json());
 app.use(cookieParser(process.env.JWT_SECRET));
 app.use(morgan('tiny'));
+// app.use(fileUpload());
 
 app.use(
   cors({

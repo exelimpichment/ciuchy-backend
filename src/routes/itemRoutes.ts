@@ -1,11 +1,9 @@
 import express from 'express';
-
 export const router = express.Router();
+import { addItem, getSingleItem } from '../Controllers/itemController';
 
-import { getSingleItem, getItems } from '../Controllers/itemController';
+import upload from '../utils/multer-config';
 
-router.route('/').get(getItems);
+router.route('/addItem').post(upload.array('file', 5), addItem);
 
-router.route('/:Id').get(getSingleItem);
-// Request URL: http://localhost:3000/users/34/books/8989
-// req.params: { "userId": "34", "bookId": "8989" }
+router.route('/:_id').get(getSingleItem);
