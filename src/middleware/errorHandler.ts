@@ -1,5 +1,4 @@
 import { Request, Response } from 'express';
-// import { CustomAPIError } from '../errors/customError';
 import { StatusCodes } from 'http-status-codes';
 
 // got it from here:

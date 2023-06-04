@@ -1,22 +1,12 @@
 import * as mongoose from 'mongoose';
-
-const listOfBrands = [
-  'Nike',
-  'Louis Vuitton',
-  'Hermes',
-  'Gucci',
-  'Tiffany & Co.',
-  'Zara',
-  'H&M',
-  'Rolex',
-  'Burberry',
-  'Adidas',
-];
-const conditionList = ['New', 'Very Good', 'Good', 'Poor'];
-
-const categoryList = ['woman', 'men', 'kids', 'about'];
-
-const typeList = ['Shoes', 'Clothes', 'Accessories'];
+import {
+  brandList,
+  conditionList,
+  categoryList,
+  colorList,
+  typeList,
+  stateList,
+} from '../utils/defaultModelEnums';
 
 const ItemSchema = new mongoose.Schema(
   {
@@ -24,6 +14,19 @@ const ItemSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: 'User',
       required: [true, 'Owner should be provided'],
+    },
+    ownerImage: {
+      type: String,
+      required: [true, 'Owner image should be provided'],
+    },
+    ownerName: {
+      type: String,
+      required: [true, 'Owner name should be provided'],
+    },
+    ownerRating: {
+      default: 0,
+      type: Number,
+      required: [true, 'Owner rating should be provided'],
     },
     title: {
       type: String,
@@ -40,58 +43,80 @@ const ItemSchema = new mongoose.Schema(
     category: {
       type: String,
       required: [true, 'Category should be provided'],
-      enum: {
-        values: categoryList,
-        message: '{VALUE} is not supported',
-      },
+      enum: categoryList,
     },
     brand: {
       type: String,
-      required: [true, 'Category should be provided'],
-      enum: {
-        values: listOfBrands,
-        message: '{VALUE} is not supported',
-      },
+      required: [true, 'Brand should be provided'],
+      enum: brandList,
+    },
+    color: {
+      type: String,
+      required: [true, 'Color should be provided'],
+      enum: colorList,
     },
     type: {
       type: String,
       required: [true, 'Type should be provided'],
-      enum: {
-        values: typeList,
-        message: '{VALUE} is not supported',
-      },
+      enum: typeList,
     },
     condition: {
       type: String,
-      required: [true, 'Category should be provided'],
-      enum: {
-        values: conditionList,
-        message: '{VALUE} is not supported',
-      },
+      required: [true, 'Condition should be provided'],
+      enum: conditionList,
     },
     price: {
       default: 0,
       type: Number,
-      required: [true, 'Name should be provided'],
+      required: [true, 'Price should be provided'],
     },
     images: {
       type: [String],
       required: [true, 'Images should be provided'],
     },
+    state: {
+      type: String,
+      enum: stateList,
+      default: 'Active',
+    },
   },
   { timestamps: true }
 );
 
+type brandsTypes =
+  | 'Nike'
+  | 'Louis Vuitton'
+  | 'Hermes'
+  | 'Gucci'
+  | 'Tiffany & Co.'
+  | 'Zara'
+  | 'H&M'
+  | 'Rolex'
+  | 'Burberry'
+  | 'Adidas';
+
+type conditionType = 'New' | 'Very Good' | 'Good' | 'Poor';
+
+type categoryType = 'woman' | 'men' | 'kids' | 'about';
+
+type typeVariants = 'Shoes' | 'Clothes' | 'Accessories';
+
+type stateType = 'Draft' | 'Active';
+
 export interface IItem extends mongoose.Document {
+  ownerImage: string;
+  ownerName: string;
   owner: mongoose.Schema.Types.ObjectId;
   description: string;
   title: string;
-  category: string;
-  brand: string;
-  condition: string;
-  typeList: string;
-  price: Number;
+  category: categoryType;
+  brand: brandsTypes;
+  condition: conditionType;
+  typeList: typeVariants;
+  price: number;
   images?: Array<string>;
+  state: stateType;
+  ownerRating: number;
 }
 
 export const Item = mongoose.model<IItem>('Item', ItemSchema);

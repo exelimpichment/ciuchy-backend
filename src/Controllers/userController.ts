@@ -6,12 +6,12 @@ import crypto from 'crypto';
 import { PutObjectCommand } from '@aws-sdk/client-s3';
 import { s3 } from '../utils/s3instance';
 
-export const getUserSearchList = async (req: Request, res: Response) => {
+export const getUserList = async (req: Request, res: Response) => {
   const { user } = req.query;
 
   const listOfUsers = await User.find({ name: { $regex: user, $options: 'i' } })
     .select('-password')
-    .limit(5);
+    .limit(10);
   res.status(StatusCodes.OK).json({ listOfUsers, nbHits: listOfUsers.length });
 };
 
@@ -43,7 +43,6 @@ export const updateUserPassword = async (req: Request, res: Response) => {
 export const updateProfileDetails = async (req: Request, res: Response) => {
   const { about, language, country } = req.body;
   const file = req.file;
-  console.log(req.body);
 
   const user = await User.findOne({ _id: req.user?.userId });
 
@@ -88,7 +87,17 @@ export const updateProfileDetails = async (req: Request, res: Response) => {
 };
 
 export const showCurrentUser = async (req: Request, res: Response) => {
-  res.status(StatusCodes.OK).json({ user: req.user });
+  if (!req.user) {
+    throw new CustomError.UnauthenticatedError('Verification Failed');
+  }
+
+  const user = await User.find({ _id: req.user.userId })
+    .select('-password')
+    .select('-verificationToken')
+    .select('-isVerified')
+    .select('-verifiedOn');
+
+  res.status(StatusCodes.OK).json({ user });
 };
 
 export const getSingleUser = async (req: Request, res: Response) => {
@@ -96,6 +105,9 @@ export const getSingleUser = async (req: Request, res: Response) => {
 
   const user = await User.findOne({ _id })
     .select('-password')
+    .select('-verificationToken')
+    .select('-isVerified')
+    .select('-verifiedOn')
     .populate('items');
 
   if (!user) {
@@ -103,4 +115,8 @@ export const getSingleUser = async (req: Request, res: Response) => {
   }
 
   res.status(StatusCodes.OK).json({ user });
+};
+
+export const getAllUsers = async (req: Request, res: Response) => {
+  res.status(StatusCodes.OK).json('get all users');
 };

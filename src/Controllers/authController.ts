@@ -58,13 +58,14 @@ export const verifyEmail = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
-  const { email, password } = req.body;
+  const { inputEmail, password } = req.body;
 
-  if (!email || !password) {
+  if (!inputEmail || !password) {
     throw new CustomError.BadRequestError('please provide email and password');
   }
 
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: inputEmail });
+
   if (!user) {
     throw new CustomError.UnauthenticatedError('Invalid Credentials');
   }
@@ -86,6 +87,19 @@ export const login = async (req: Request, res: Response) => {
 
   const existingToken = await Token.findOne({ user: user._id });
 
+  const {
+    name,
+    _id,
+    email,
+    image,
+    country,
+    gender,
+    role,
+    dateOfBirth,
+    language,
+    holidayMode,
+  } = user;
+
   if (existingToken) {
     const { isValid } = existingToken;
     if (!isValid) {
@@ -93,9 +107,21 @@ export const login = async (req: Request, res: Response) => {
     }
     refreshToken = existingToken.refreshToken;
     attachCookiesToResponse({ res, userForTokenization, refreshToken });
-    res
-      .status(StatusCodes.OK)
-      .json({ user: userForTokenization, msg: 'Logged In' });
+    res.status(StatusCodes.OK).json({
+      user: {
+        name,
+        _id,
+        email,
+        image,
+        country,
+        gender,
+        role,
+        dateOfBirth,
+        language,
+        holidayMode,
+      },
+      msg: 'Logged In',
+    });
     return;
   }
 
@@ -109,9 +135,21 @@ export const login = async (req: Request, res: Response) => {
 
   attachCookiesToResponse({ res, userForTokenization, refreshToken });
 
-  res
-    .status(StatusCodes.OK)
-    .json({ user: userForTokenization, msg: 'Logged In' });
+  res.status(StatusCodes.OK).json({
+    user: {
+      name,
+      _id,
+      email,
+      image,
+      country,
+      gender,
+      role,
+      dateOfBirth,
+      language,
+      holidayMode,
+    },
+    msg: 'Logged In',
+  });
 };
 
 export const logout = async (req: Request, res: Response) => {
